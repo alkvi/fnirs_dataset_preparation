@@ -45,30 +45,6 @@ disp(demographics);
 
 stim_table = nirs.createStimulusTable(raw_data);
 
-%%  Manual trigger fixes
-
-% Index 237 (a protocol 2 session) has 24 manual triggers (all in channel 1).
-% Rest, block, repeat 12 times. Copy to each other channel.
-% Then keep only corresponding ones. One trigger was 8 seconds late.
-row_index = 237;
-stim_table.stim_channel1{row_index,1}.onset(7) = stim_table.stim_channel1{row_index,1}.onset(7) - 8;
-stim_table(row_index,3:13) = stim_table(row_index,2);
-stim_table = populate_manual_stims(row_index, stim_table, 13);
-
-% Index 267 (p1), 268 (p2), 269 (p3) were also manually marked. 
-% These are in channel 5.
-row_index = 267;
-stim_table(row_index,2:19) = stim_table(row_index,6);
-stim_table = populate_manual_stims(row_index, stim_table, 19);
-
-row_index = 268;
-stim_table(row_index,2:13) = stim_table(row_index,6);
-stim_table = populate_manual_stims(row_index, stim_table, 13);
-
-row_index = 269;
-stim_table(row_index,2:13) = stim_table(row_index,6);
-stim_table = populate_manual_stims(row_index, stim_table, 13);
-
 %% Fixes to all stimuli
 
 for row_index = 1:size(stim_table,1)
@@ -85,17 +61,7 @@ for row_index = 1:size(stim_table,1)
         stim_table(row_index,14) = {''};
         max_col = 13;
     end
-    
-    % Index 64 lacks one trigger.
-    if row_index == 64
-        max_col = 12;
-    end
-    
-    % Index 227 only has a block of recorded data.
-    if row_index == 227
-        max_col = 3;
-    end
-    
+
     % Remove the first trigger marking the start of rest period.
     for column_index = 2:max_col
         stim_table{row_index,column_index}{1}.onset(1) = []; 
@@ -105,6 +71,8 @@ for row_index = 1:size(stim_table,1)
 end
 
 %% Rename and insert modified stims into data
+
+% TODO: these are more simply in this version, stim 1-6, fix.
 
 % Visualize results before change.
 figure(); raw_data(1).draw;
@@ -180,18 +148,6 @@ for row_index=1:size(raw_data,1)
         stim_table_discard_idx = 14;
     end
     
-    % Index 64 lacks one trigger.
-    if row_index == 64
-        stim_names = stim_names(1:end-1);
-        stim_table_discard_idx = 13;
-    end
-    
-    % Index 227 only has a block of recorded data.
-    if row_index == 227
-        stim_names = stim_names(1:2);
-        stim_table_discard_idx = 3;
-    end
-    
     % Remove the extra trigger at the end.
     stim_row = stim_table(row_index,:);
     if size(stim_row,2) >= stim_table_discard_idx
@@ -222,14 +178,6 @@ figure(); raw_data(1).draw;
 figure(); raw_data(2).draw;
 figure(); raw_data(3).draw;
 
-% figure(); raw_data(64).draw;
-% figure(); raw_data(227).draw;
-% figure(); raw_data(237).draw;
-% 
-% figure(); raw_data(267).draw;
-% figure(); raw_data(268).draw;
-% figure(); raw_data(269).draw;
-
 %% Convert to BIDS & SNIRF
 
 output_folder_single = "nirs_toolbox_snirf_output";
@@ -247,23 +195,3 @@ end
 % in the future
 %output_folder = "test_output";
 %nirs.bids.DataSet2BIDS(raw_data, output_folder);
-
-%% Helper functions
-
-function stim_table = populate_manual_stims(row_index, stim_table, max_col_idx)
-
-stim_start_idx = 1;
-for column_index=2:max_col_idx
-    orig_onset = stim_table{row_index,column_index}{1}.onset;
-    orig_dur = stim_table{row_index,column_index}{1}.dur;
-    orig_amp = stim_table{row_index,column_index}{1}.amp;
-    new_onset = orig_onset(stim_start_idx:stim_start_idx+1);
-    new_dur = orig_dur(stim_start_idx:stim_start_idx+1);
-    new_amp = orig_amp(stim_start_idx:stim_start_idx+1);
-    stim_table{row_index,column_index}{1}.onset = new_onset;
-    stim_table{row_index,column_index}{1}.dur = new_dur;
-    stim_table{row_index,column_index}{1}.amp = new_amp;
-    stim_start_idx = stim_start_idx + 2;
-end
-
-end
