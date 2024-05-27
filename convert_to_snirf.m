@@ -72,106 +72,28 @@ end
 
 %% Rename and insert modified stims into data
 
-% TODO: these are more simply in this version, stim 1-6, fix.
-
 % Visualize results before change.
 figure(); raw_data(1).draw;
 figure(); raw_data(2).draw;
 figure(); raw_data(3).draw;
 
-for row_index=1:size(raw_data,1)
-    
-    if strcmp(demographics.session{row_index}, "protocol1")
-        stim_names = ["stim_channel1", "stim_channel2", "stim_channel3", ... 
-                        "stim_channel4", "stim_channel5" "stim_channel6" ...
-                        "stim_channel7", "stim_channel8" "stim_channel9" ...
-                        "stim_channel10", "stim_channel11" "stim_channel12" ...
-                        "stim_channel13", "stim_channel14" "stim_channel15" ...
-                        "stim_channel16", "stim_channel17" "stim_channel18"];
-        stim_rename_list = {'stim_channel1', 'Straight_walking';
-                         'stim_channel2' ,'Stand_still_and_Aud_Stroop';
-                         'stim_channel3' ,'Straight_walking_and_Aud_Stroop';
-                         'stim_channel4' ,'Stand_still_and_Aud_Stroop';
-                         'stim_channel5' ,'Straight_walking';
-                         'stim_channel6' ,'Straight_walking_and_Aud_Stroop';
-                         'stim_channel7' ,'Straight_walking';
-                         'stim_channel8' ,'Straight_walking_and_Aud_Stroop';
-                         'stim_channel9' ,'Stand_still_and_Aud_Stroop';
-                         'stim_channel10' ,'Straight_walking_and_Aud_Stroop';
-                         'stim_channel11' ,'Stand_still_and_Aud_Stroop';
-                         'stim_channel12' ,'Straight_walking'
-                         'stim_channel13' ,'Straight_walking'
-                         'stim_channel14' ,'Stand_still_and_Aud_Stroop'
-                         'stim_channel15' ,'Straight_walking_and_Aud_Stroop'
-                         'stim_channel16' ,'Stand_still_and_Aud_Stroop'
-                         'stim_channel17' ,'Straight_walking'
-                         'stim_channel18' ,'Straight_walking_and_Aud_Stroop'};
-        stim_discard = {'stim_channel19'};
-        stim_table_discard_idx = 20;
-    elseif strcmp(demographics.session{row_index}, "protocol2")
-        stim_rename_list = {'stim_channel1', 'Straight_walking';
-                         'stim_channel2' ,'Navigated_walking';
-                         'stim_channel3' ,'Straight_walking';
-                         'stim_channel4' ,'Navigated_walking';
-                         'stim_channel5' ,'Navigated_walking';
-                         'stim_channel6' ,'Straight_walking';
-                         'stim_channel7' ,'Navigated_walking';
-                         'stim_channel8' ,'Straight_walking';
-                         'stim_channel9' ,'Straight_walking';
-                         'stim_channel10' ,'Navigated_walking';
-                         'stim_channel11' ,'Straight_walking';
-                         'stim_channel12' ,'Navigated_walking'};
-        stim_names = ["stim_channel1", "stim_channel2", "stim_channel3", ... 
-                        "stim_channel4", "stim_channel5" "stim_channel6" ...
-                        "stim_channel7", "stim_channel8" "stim_channel9" ...
-                        "stim_channel10", "stim_channel11" "stim_channel12"];
-        stim_discard = {'stim_channel13'};
-        stim_table_discard_idx = 14;
-    else
-        stim_names = ["stim_channel1", "stim_channel2", "stim_channel3", ... 
-                        "stim_channel4", "stim_channel5" "stim_channel6" ...
-                        "stim_channel7", "stim_channel8" "stim_channel9" ...
-                        "stim_channel10", "stim_channel11" "stim_channel12"];
-        stim_rename_list = {'stim_channel1', 'Navigation_and_Aud_Stroop';
-                         'stim_channel2' ,'Navigation';
-                         'stim_channel3' ,'Navigation_and_Aud_Stroop';
-                         'stim_channel4' ,'Navigation';
-                         'stim_channel5' ,'Navigation';
-                         'stim_channel6' ,'Navigation_and_Aud_Stroop';
-                         'stim_channel7' ,'Navigation';
-                         'stim_channel8' ,'Navigation_and_Aud_Stroop';
-                         'stim_channel9' ,'Navigation_and_Aud_Stroop';
-                         'stim_channel10' ,'Navigation';
-                         'stim_channel11' ,'Navigation_and_Aud_Stroop';
-                         'stim_channel12' ,'Navigation'};
-        stim_discard = {'stim_channel13'};
-        stim_table_discard_idx = 14;
-    end
-    
-    % Remove the extra trigger at the end.
-    stim_row = stim_table(row_index,:);
-    if size(stim_row,2) >= stim_table_discard_idx
-        stim_row(:,stim_table_discard_idx:end) = [];
-    end
-    
-    job = nirs.modules.DiscardStims;
-    job.listOfStims = stim_discard;
-    raw_data(row_index) = job.run(raw_data(row_index));
-    
-    % Run the toolbox job to create the stimulus data.
-    % fileIdx=newstiminfo.FileIdx(idx);
-    job = nirs.modules.ChangeStimulusInfo();
-    job.ChangeTable = stim_row;
-    raw_data(row_index) = job.run(raw_data(row_index));
-    
-    % Set each duration to 20 seconds.
-    raw_data(row_index) = nirs.design.change_stimulus_duration(raw_data(row_index),stim_names,20);
-    
-    % Rename the stimuli
-    job = nirs.modules.RenameStims;
-    job.listOfChanges = stim_rename_list;
-    raw_data(row_index) = job.run(raw_data(row_index));
-end
+job = nirs.modules.RenameStims;
+job.listOfChanges = {
+    '1', 'Rest';
+    '2', 'Straight_walking';
+    '3', 'Stand_still_and_Aud_Stroop';
+    '4', 'Straight_walking_and_Aud_Stroop';
+    '5', 'Navigated_walking';
+    '6', 'Navigation_and_Aud_Stroop'};
+raw_data = job.run(raw_data);
+
+% Remove stim 1 (rest).
+j=nirs.modules.DiscardStims;
+j.listOfStims={'Rest'};
+raw_data = j.run(raw_data);
+
+% Set each duration to 20 seconds.
+raw_data = nirs.design.change_stimulus_duration(raw_data,[],20);
 
 % Visualize results after change.
 figure(); raw_data(1).draw;
