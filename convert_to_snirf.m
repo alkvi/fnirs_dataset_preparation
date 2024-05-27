@@ -33,44 +33,12 @@ end
 demographics = nirs.createDemographicsTable(raw_data);
 disp(demographics);
 
-%% Fix stimuli
+%% Rename and insert modified stims into data
 
 % Our design: stimulus length is 20 seconds. Rest is ~15 seconds.
 % Protocol 1 has 6*3 conditions, protocol 2&3 have 6*2 conditions.
-% Triggers arrive as: (1) start rest period (2) start block period.
 % The NIRS toolbox expects stimuli to only demarcate start of each
 % stimulus. Each stimulus then has a certain length.
-% We therefore need to remove the trigger for the start of the rest period
-% from our data.
-
-stim_table = nirs.createStimulusTable(raw_data);
-
-%% Fixes to all stimuli
-
-for row_index = 1:size(stim_table,1)
-    
-    % Protocol 1 contains 18 stimuli (each condition 6 times).
-    % The stim_table contains 19 stimuli; the last one should be removed (we
-    % have an extra block in PsychoPy at the end after experiment is over). The
-    % last one represents start of final rest+start of extra block.
-    % Same for protocol 2 and 3, but these have 12 stimuli, so remove stim 13.
-    if strcmp(demographics.session{row_index}, "protocol1")
-        stim_table(row_index,20) = {''};
-        max_col = 19;
-    else
-        stim_table(row_index,14) = {''};
-        max_col = 13;
-    end
-
-    % Remove the first trigger marking the start of rest period.
-    for column_index = 2:max_col
-        stim_table{row_index,column_index}{1}.onset(1) = []; 
-        stim_table{row_index,column_index}{1}.dur(1) = []; 
-    end
-    
-end
-
-%% Rename and insert modified stims into data
 
 % Visualize results before change.
 figure(); raw_data(1).draw;
@@ -79,12 +47,12 @@ figure(); raw_data(3).draw;
 
 job = nirs.modules.RenameStims;
 job.listOfChanges = {
-    '1', 'Rest';
-    '2', 'Straight_walking';
-    '3', 'Stand_still_and_Aud_Stroop';
-    '4', 'Straight_walking_and_Aud_Stroop';
-    '5', 'Navigated_walking';
-    '6', 'Navigation_and_Aud_Stroop'};
+    'stim_channel1', 'Rest';
+    'stim_channel2', 'Straight_walking';
+    'stim_channel3', 'Stand_still_and_Aud_Stroop';
+    'stim_channel4', 'Straight_walking_and_Aud_Stroop';
+    'stim_channel5', 'Navigated_walking';
+    'stim_channel6', 'Navigation_and_Aud_Stroop'};
 raw_data = job.run(raw_data);
 
 % Remove stim 1 (rest).
