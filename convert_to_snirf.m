@@ -57,7 +57,7 @@ raw_data = job.run(raw_data);
 
 % Remove stim 1 (rest).
 j=nirs.modules.DiscardStims;
-j.listOfStims={'Rest'};
+j.listOfStims={'Rest', 'stim_aux1', 'stim_aux2'};
 raw_data = j.run(raw_data);
 
 % Set each duration to 20 seconds.
