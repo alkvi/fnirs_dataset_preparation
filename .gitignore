@@ -1,0 +1,8 @@
+sourcedata
+original_format_nirx_data
+nirs_toolbox_snirf_output
+bids_dataset_snirf
+temp_data
+env-data-prep
+*.mat
+*.snirf

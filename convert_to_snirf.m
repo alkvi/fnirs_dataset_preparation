@@ -1,8 +1,10 @@
-
+% Data preparation
+% Ran on R2024a, forked version of NIRS toolbox
+% https://github.com/alkvi/nirs-toolbox-fork/tree/phd_study_3
 %% Load data
 
 % Load all data. Directory is structured as group/subject/session.
-my_data_dir = '../Data/original_format_nirx_data';
+my_data_dir = 'original_format_nirx_data';
 raw_data = nirs.io.loadDirectory(my_data_dir,{'group','subject', 'session'}); 
 
 % Check loaded demographics.
