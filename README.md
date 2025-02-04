@@ -22,4 +22,4 @@ IMU data is captured with APDM Mobility Lab using sensors on feet and lumbar. Ga
 - Then, _prepare_block_points.py_ is run to extract stimuli block timepoints from the BIDS dataset.
 - Then, _sync_imu_data.py_ is run to adjust synchronization timepoints between fNIRS and IMU data.
 
-Spatiotemporal gait variables are then calculated by running _extract_calibration_stance.py_ and _extract_gait_variables.py_ in https://github.com/alkvi/python-imu-gait-evaluation/tree/phd_study_2.
+Spatiotemporal gait variables are then calculated by running _gait_variables_gaitmap.py_.
