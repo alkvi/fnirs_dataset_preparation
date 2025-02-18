@@ -13,6 +13,7 @@ https://github.com/alkvi/nirs-toolbox-fork/commit/dfc4e28d2c8ed5abf4685a6b7a8e59
 - Then, the BIDS output structure was created by running _prepare_bids_structure.py_.
 - Then, SNIRF files were converted into a BIDS dataset using [sourcedata2bids](https://github.com/rob-luke/fnirs-apps-sourcedata2bids) (v0.4.5).
 - Then, SNIRF files were validated using [pysnirf2](https://github.com/BUNPC/pysnirf2) (v0.7.3) by running _validate_snirf_files.py_.
+- A folder with an original NIRx probeInfo file is created in nirx_probe.
 
 ### IMU data preparation
 

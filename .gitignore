@@ -6,3 +6,6 @@ temp_data
 env-data-prep
 *.mat
 *.snirf
+signal_quality/*.pickle
+signal_quality/*.json
+signal_quality/*.csv
