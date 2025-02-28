@@ -2,10 +2,12 @@ sourcedata
 original_format_nirx_data
 nirs_toolbox_snirf_output
 bids_dataset_snirf
+imu_data_parquet
 temp_data
 env-data-prep
 *.mat
 *.snirf
+*.log
 signal_quality/*.pickle
 signal_quality/*.json
 signal_quality/*.csv

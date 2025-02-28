@@ -576,28 +576,20 @@ def extract_variables(series_in, imu_data, session, block_parameters, calibratio
 if __name__ == "__main__":
 
     plot_gait_events = 0
-    plot_filter = 0
-    plot_quaternions_on = 0
-    plot_positions = 0
-    plot_trajectory = 0
 
     # Where all the data is stored
-    pq_folder = "../Park-MOVE_fnirs_dataset_v2/IMU_data/imu_data_parquet"
+    pq_folder = "imu_data_parquet"
     pq_files = [ f.path for f in os.scandir(pq_folder)]
 
     # Read calibration data
-    calibration_file = "../Park-MOVE_fnirs_dataset_v2/IMU_data/calibration_stance_data.csv"
+    calibration_file = "temp_data/calibration_stance_data.csv"
     calibration_data = pd.read_csv(calibration_file)
 
     # Read event data
-    event_file = "../Park-MOVE_fnirs_dataset_v2/IMU_data/all_events_nirs_imu.csv"
+    event_file = "temp_data/all_events_nirs_imu.csv"
     all_events = pd.read_csv(event_file)
     subjects = np.unique(all_events['subject'])
     sessions = ['protocol_1', 'protocol_2', 'protocol_3']
-
-    # Read subject height data
-    height_file = "../Park-MOVE_fnirs_dataset_v2/basic_demographics.csv"
-    subject_height_data = pd.read_csv(height_file)
 
     # Prepare folder for figures
     output_folder_name = os.getcwd() + "/saved_figures"
@@ -612,17 +604,6 @@ if __name__ == "__main__":
         # Read IMU data
         imu_data = pd.read_parquet(pq_file)
         subject = list(imu_data.columns)[0].split("/")[0]
-
-        # Skip subjects not included in study
-        if subject in ['FNP1002','FNP1014', 'FNP1077']:
-            print("Skipping " + subject)
-            continue
-
-        # Get subject height for use in pendulum model
-        subject_height = subject_height_data[subject_height_data['subject'] == subject]['height'].values[0]
-        if np.isnan(subject_height):
-            print("WARN: no height data, setting to None")
-            subject_height = None
 
         # Get calibration data
         subject_calibration_data = calibration_data[calibration_data['subject'] == subject]
@@ -639,13 +620,6 @@ if __name__ == "__main__":
             if events.empty:
                 print(f"{subject} does not have {session}, skipping")
                 continue
-
-            # FNP1006 seems to have the label RIGHT_WRIST instead of RIGHT_FOOT on protocol 1. Replace.
-            if subject == "FNP1006" and session == "protocol_1":
-                old_columns = [column for column in imu_data if "RIGHT_WRIST" in column]
-                new_columns = [column.replace("WRIST", "FOOT") for column in imu_data if "RIGHT_WRIST" in column]
-                col_mapping = dict(zip(old_columns, new_columns))
-                imu_data.rename(columns = col_mapping, inplace = True)
             
             # Prepare a list for holding detailed block values
             block_parameters = []
@@ -671,9 +645,9 @@ if __name__ == "__main__":
     for col in ['block','trial_type', 'session', 'subject']:
         final_frame_gait.insert(0, col, final_frame_gait.pop(col))
     print(final_frame_gait)
-    final_frame_gait.to_csv("imu_gait_parameters.csv", index=False)
+    final_frame_gait.to_csv("temp_data/imu_gait_parameters.csv", index=False)
 
     final_frame_variability = pd.concat(variability_frames)
     print(final_frame_variability)
-    final_frame_variability.to_csv("imu_variability_parameters.csv", index=False)
+    final_frame_variability.to_csv("temp_data/imu_variability_parameters.csv", index=False)
     print('done')

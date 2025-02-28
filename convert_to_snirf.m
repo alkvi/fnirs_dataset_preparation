@@ -5,7 +5,7 @@
 
 % Load all data. Directory is structured as group/subject/session.
 my_data_dir = 'original_format_nirx_data';
-raw_data = nirs.io.loadDirectory(my_data_dir,{'group','subject', 'session'}); 
+raw_data = nirs.io.loadDirectory(my_data_dir,{'group','subject', 'session'}, @(file)nirs.io.loadNIRx(file,false)); 
 
 % Check loaded demographics.
 demographics = nirs.createDemographicsTable(raw_data);

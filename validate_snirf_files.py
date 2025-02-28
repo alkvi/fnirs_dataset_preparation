@@ -5,7 +5,7 @@ from snirf import validateSnirf
 if __name__ == "__main__":
 
     # Specify BIDS root folder
-    bids_root = "../Data/bids_dataset_snirf"
+    bids_root = "bids_dataset_snirf"
     #print(make_report(bids_root))
 
     # We have 4 file types: events, channels, optodes, and nirs.

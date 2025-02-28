@@ -22,5 +22,6 @@ IMU data is captured with APDM Mobility Lab using sensors on feet and lumbar. Ga
 - First, _prepare_apdm_data.py_ is run to extract raw data from HDF5 files into [Apache Parquet](https://parquet.apache.org/docs/) format files.
 - Then, _prepare_block_points.py_ is run to extract stimuli block timepoints from the BIDS dataset.
 - Then, _sync_imu_data.py_ is run to adjust synchronization timepoints between fNIRS and IMU data.
+- Stance calibration data for use in calculating spatiotemporal gait variables is extracted with _extract_calibration_stance.py_.
 
 Spatiotemporal gait variables are then calculated by running _gait_variables_gaitmap.py_.

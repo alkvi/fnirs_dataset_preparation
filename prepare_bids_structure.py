@@ -5,11 +5,11 @@ import shutil
 if __name__ == "__main__":
 
     # Where all the data is stored
-    snirf_source_folder = "../Data/nirs_toolbox_snirf_output"
+    snirf_source_folder = "nirs_toolbox_snirf_output"
     files = [ f.path for f in os.scandir(snirf_source_folder) if ".snirf" in f.path]
 
     # Where we will create the structure for sourcedata2bids
-    bids_folder = "../Data/bids_dataset_snirf/sourcedata"
+    bids_folder = "bids_dataset_snirf/sourcedata"
 
     for file in files:
         print("Processing file " + file)

@@ -5,7 +5,7 @@ from mne_bids import BIDSPath, read_raw_bids, print_dir_tree, make_report
 if __name__ == "__main__":
 
     # Specify BIDS root folder
-    bids_root = "../Data/fNIRS_data/bids_dataset_snirf"
+    bids_root = "bids_dataset_snirf"
     #print(make_report(bids_root))
 
     # We have 4 file types: events, channels, optodes, and nirs.
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         
             # Get the file for this subject/session
             bids_path = BIDSPath(subject=subject, task=task, session=session,
-                                suffix=suffix, datatype=datatype, root=bids_root)
+                                suffix=suffix, datatype=datatype, root=bids_root, extension="tsv")
             print("Using BIDS file path..")
             print(bids_path)
 
@@ -47,4 +47,4 @@ if __name__ == "__main__":
 
     full_frame = pd.concat(event_frames)
     print(full_frame)
-    full_frame.to_csv("../Data/temp_data/all_events_nirs.csv", index=False)
+    full_frame.to_csv("temp_data/all_events_nirs.csv", index=False)

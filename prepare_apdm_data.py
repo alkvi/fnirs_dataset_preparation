@@ -31,21 +31,18 @@ def extract_sensor_into_frame(subject_id, file_protocol, sensor, label, types, a
 if __name__ == "__main__":
         
     # Where all the data is stored
-    root_data_folder = "P:/uMove/fNIRS/fNIRS_big_study/Data/APDM"
+    root_data_folder = "C:/apdm_data_ms"
     subfolders = [ f.path for f in os.scandir(root_data_folder) if f.is_dir() ]
 
     # We know we're missing some calibration files
-    missing_calibration = ["FNP1001", "FNP1005", "FNP1006", "FNP1007"]
+    missing_calibration = ["FNP1098"]
 
     # These ones have the static ground calibration last instead of first
-    calibration_last = ["FNP2023", "FNP2025", "FNP2037"]
+    calibration_last = []
 
     # Set up a mapping from file to protocol
     file_id_mapping_normal = {1: "calibration_1", 2: "calibration_2", 3: "protocol_1", 4: "protocol_2", 5: "protocol_3"}
     file_id_mapping_missing = {1: "protocol_1", 2: "protocol_2", 3: "protocol_3"}
-    file_id_mapping_last = {1: "calibration_2", 2: "protocol_1", 3: "protocol_2", 4: "protocol_3", 5: "calibration_1", }
-    file_id_mapping_1033 = {1: "calibration_1", 2: "calibration_2", 3: "protocol_2", 4: "protocol_1", 5: "protocol_3"}
-    file_id_mapping_2040 = {1: "calibration_1", 2: "calibration_2", 3: "protocol_1", 4: "calibration_1_2", 5: "calibration_2_2", 6: "protocol_2"}
 
     for subfolder in subfolders:
 
@@ -59,7 +56,7 @@ if __name__ == "__main__":
         raw_data_folder = raw_data_folder[0]
         raw_data_files = [ f.path for f in os.scandir(raw_data_folder)]
         subject_id = raw_data_folder.split('/')[-1].split('\\')[1].split("_")[4]
-        subject_storage_file = "../Data/imu_data_parquet/" + subject_id + "_imu_data.parquet"
+        subject_storage_file = "imu_data_parquet/" + subject_id + "_imu_data.parquet"
 
         # Check if we've already processed the data for this subject
         if os.path.exists(subject_storage_file):
@@ -74,12 +71,6 @@ if __name__ == "__main__":
             # Which protocol are we processing?
             if subject_id in missing_calibration:
                 file_protocol = file_id_mapping_missing[file_id]
-            elif subject_id in calibration_last:
-                file_protocol = file_id_mapping_last[file_id]
-            elif subject_id == "FNP1033":
-                file_protocol = file_id_mapping_1033[file_id]
-            elif subject_id == "FNP2040":
-                file_protocol = file_id_mapping_2040[file_id]
             else:
                 file_protocol = file_id_mapping_normal[file_id]
             

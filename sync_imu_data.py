@@ -4,10 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 
-def set_xvalues(polygon, x0, x1):
+def set_xvalues(polygon, x0):
     _ndarray = polygon.get_xy()
-    _ndarray[:, 0] = [x0, x0, x1, x1, x0]
-    polygon.set_xy(_ndarray)
+    _ndarray = np.array(_ndarray)
+    new_coords = np.array([x0, _ndarray[1]])
+    polygon.set_xy(new_coords)
 
 def update(val):
     new_lag = lag_slider.val
@@ -15,15 +16,15 @@ def update(val):
         poly = stim_polygons[i]
         onset = onsets[i]
         duration = durations[i]
-        set_xvalues(poly, onset+new_lag, onset+new_lag+duration)
+        set_xvalues(poly, onset+new_lag)
     fig.canvas.draw_idle()
 
 if __name__ == "__main__":
 
     # Where all the data is stored
-    pq_folder = "../Data/imu_data_parquet"
+    pq_folder = "imu_data_parquet"
     pq_files = [ f.path for f in os.scandir(pq_folder)]
-    event_file = "../Data/all_events_nirs.csv"
+    event_file = "temp_data/all_events_nirs.csv"
 
     # Read event data
     all_events = pd.read_csv(event_file)
@@ -31,10 +32,10 @@ if __name__ == "__main__":
     sessions = ['protocol_1', 'protocol_2', 'protocol_3']
 
     # Some subjects need special handling
-    subjects_from_raw_data = ["FNP1054", "FNP1056", "FNP1072", "FNP1076"]
+    subjects_from_raw_data = []
 
     fs_imu = 128
-    result_event_file = "../Data/all_events_nirs_imu.csv"
+    result_event_file = "temp_data/all_events_nirs_imu.csv"
     for pq_file in pq_files:
         
         # Read IMU data
@@ -49,10 +50,6 @@ if __name__ == "__main__":
                 print("Already processed " + imu_subject + ", skipping")
                 continue
 
-        if imu_subject in ['FNP1014']:
-            print("Skipping " + imu_subject)
-            continue
-
         # Go through sessions
         new_events = []
         for session in sessions:
@@ -60,16 +57,19 @@ if __name__ == "__main__":
             # Get event data and acc data for session
             events = all_events[(all_events["subject"] == imu_subject) & (all_events["session"] == session.replace('_', ''))].copy()
             seek_column = session + "/LUMBAR/Accelerometer"
-            if imu_subject == "FNP1043":
-                seek_column = session + "/RIGHT_FOOT/Accelerometer"
             acc_data = imu_data.filter(regex=seek_column).to_numpy()
             print("Using pq file " + pq_file)
             print(imu_data.head())
             
             # Some participants did not complete all protocols
-            if acc_data.size == 0:
+            if acc_data.size == 0 or events.size == 0:
                 print("Lacking IMU data for session " + session)
                 continue
+
+            # Start of IMU data should be at a constant offset from first trigger
+            # This is about 7 seconds, countdown + start instruction
+            first_onset = events['onset'].to_numpy()[0]
+            events['onset'] = events['onset'] - first_onset + 7.0
 
             # Prepare a plot with a acc data
             fig, ax = plt.subplots(figsize=(14, 6))
@@ -114,4 +114,4 @@ if __name__ == "__main__":
 
         # Concatenate data for subject and append to result csv
         all_events_new = pd.concat(new_events)
-        all_events_new.to_csv("../Data/all_events_nirs_imu.csv", index=False, mode="a")
+        all_events_new.to_csv("temp_data/all_events_nirs_imu.csv", index=False, mode="a")
