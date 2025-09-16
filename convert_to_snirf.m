@@ -98,8 +98,14 @@ for row_index = 1:size(stim_table,1)
     
     % Remove the first trigger marking the start of rest period.
     for column_index = 2:max_col
-        stim_table{row_index,column_index}{1}.onset(1) = []; 
-        stim_table{row_index,column_index}{1}.dur(1) = []; 
+        % Becomes cell array after column 14
+        if iscell(stim_table{row_index,column_index})
+            stim_table{row_index,column_index}{1}.onset(1) = [];
+            stim_table{row_index,column_index}{1}.dur(1) = []; 
+        else
+            stim_table{row_index,column_index}.onset(1) = [];
+            stim_table{row_index,column_index}.dur(1) = []; 
+        end
     end
     
 end
