@@ -2,6 +2,43 @@ import pandas as pd
 import numpy as np
 
 # Read auditory stroop correction sheet data
+def get_sheet_data_subject(sheet_data, start_idx):
+
+    subject_data = []
+
+    for idx in range(start_idx, len(sheet_data)):
+        answers = sheet_data.iloc[idx].values[1:]
+        subject = sheet_data.iloc[idx].values[0]
+
+        row = {"subject": subject}
+
+        for i, ans in enumerate(answers, start=1):
+            try:
+                row[f"answer_correctness_{i}"] = int(ans)
+            except (TypeError, ValueError):
+                row[f"answer_correctness_{i}"] = None
+
+        subject_data.append(row)
+
+    subject_df = pd.DataFrame(subject_data)
+    return subject_df
+
+def correctness_to_long(df):
+    df_long = df.melt(
+        id_vars="subject",
+        var_name="answer",
+        value_name="correctness"
+    )
+
+    df_long["prompt_number"] = (
+        df_long["answer"]
+        .str.extract(r"(\d+)$")
+        .astype(int)
+    )
+
+    return df_long[["subject", "prompt_number", "correctness"]]
+
+# Read auditory stroop correction sheet data
 def get_sheet_data(sheet_data, codes, protocol, start_idx):
 
     # Which ones are single task and which are dual task?
@@ -103,6 +140,16 @@ if __name__ == "__main__":
     p3_data_hc = pd.read_excel("temp_data/Accuracy_setup_3_bigstudy.xlsx", sheet_name='SETUP 3_HC')
     p3_data_pd = pd.read_excel("temp_data/Accuracy_setup_3_bigstudy.xlsx", sheet_name='SETUP 3_PD')
 
+    # Format a row per subject, then convert to long..
+    answer_codes_p1_hc = get_sheet_data_subject(p1_data_hc, 1)
+    answer_codes_p3_hc = get_sheet_data_subject(p3_data_hc, 1)
+    answer_codes_p1_pd = get_sheet_data_subject(p1_data_pd, 0)
+    answer_codes_p3_pd = get_sheet_data_subject(p3_data_pd, 0)
+    answer_codes_p1_hc_long = correctness_to_long(answer_codes_p1_hc)
+    answer_codes_p3_hc_long = correctness_to_long(answer_codes_p3_hc)
+    answer_codes_p1_pd_long = correctness_to_long(answer_codes_p1_pd)
+    answer_codes_p3_pd_long = correctness_to_long(answer_codes_p3_pd)
+
     # Get congruent/incongruent
     codes_p1 = p1_data_hc.iloc[0].values[1:]
     codes_p3 = p3_data_hc.iloc[0].values[1:]
@@ -111,11 +158,11 @@ if __name__ == "__main__":
     isi_cols = [f"isi_{i}" for i in range(1, 8)]
     isi_p1 = pd.read_excel("temp_data/auditory_stroop_protocol_1.xlsx")
     isi_p3 = pd.read_excel("temp_data/auditory_stroop_protocol_3.xlsx")
-
     isi_p1 = isi_p1[isi_cols].to_numpy().flatten()
     isi_p3 = isi_p3[isi_cols].to_numpy().flatten()
 
     # Read answer times
+    # This is all answers per subject in format answer_1 ... answer_n
     p1_hc_answer_times = pd.read_csv("temp_data/reaction_times_hc_setup1.csv")
     p3_hc_answer_times = pd.read_csv("temp_data/reaction_times_hc_setup3.csv")
     p1_pd_answer_times = pd.read_csv("temp_data/reaction_times_pd_setup1.csv")
@@ -123,10 +170,22 @@ if __name__ == "__main__":
 
     # Structure answer times
     all_data = []
-    all_data.append(structure_answer_times(p1_hc_answer_times, "protocol_1", codes_p1, isi_p1))
-    all_data.append(structure_answer_times(p3_hc_answer_times, "protocol_3", codes_p3, isi_p3))
-    all_data.append(structure_answer_times(p1_pd_answer_times, "protocol_1", codes_p1, isi_p1))
-    all_data.append(structure_answer_times(p3_pd_answer_times, "protocol_3", codes_p3, isi_p3))
+    p1_hc_long = structure_answer_times(p1_hc_answer_times, "protocol_1", codes_p1, isi_p1)
+    p3_hc_long = structure_answer_times(p3_hc_answer_times, "protocol_3", codes_p3, isi_p3)
+    p1_pd_long = structure_answer_times(p1_pd_answer_times, "protocol_1", codes_p1, isi_p1)
+    p3_pd_long = structure_answer_times(p3_pd_answer_times, "protocol_3", codes_p3, isi_p3)
+
+    # Merge answer correctness
+    p1_hc_long = p1_hc_long.merge(answer_codes_p1_hc_long, on=["subject", "prompt_number"], how="left")
+    p3_hc_long = p3_hc_long.merge(answer_codes_p3_hc_long, on=["subject", "prompt_number"], how="left")
+    p1_pd_long = p1_pd_long.merge(answer_codes_p1_pd_long, on=["subject", "prompt_number"], how="left")
+    p3_pd_long = p3_pd_long.merge(answer_codes_p3_pd_long, on=["subject", "prompt_number"], how="left")
+
+    # Concat
+    all_data.append(p1_hc_long)
+    all_data.append(p3_hc_long)
+    all_data.append(p1_pd_long)
+    all_data.append(p3_pd_long)
     answer_time_frame = pd.concat(all_data)
     answer_time_frame.to_csv("temp_data/auditory_stroop_answer_time.csv", index=False)
     print(answer_time_frame)
