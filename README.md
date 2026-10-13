@@ -4,6 +4,14 @@ This repository contains code to prepare raw data for the Park-MOVE fNIRS study.
 
 The resulting dataset can found in the data repository at: https://doi.org/10.48723/vscr-eq07
 
+### Environment
+
+~~~
+uv venv --python 3.11
+source .venv/bin/activate
+uv pip install -r requirements.txt
+~~~
+
 ### fNIRS data preparation 
 
 [SNIRF](https://github.com/fNIRS/snirf) and [BIDS](https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/11-near-infrared-spectroscopy.html) output is produced from original NIRx format data, produced in Aurora 1.4 with a NIRx NIRsport 2 8x8 system.

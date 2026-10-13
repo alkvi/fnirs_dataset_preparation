@@ -1,5 +1,5 @@
-import pandas as pd 
-import numpy as np 
+import pandas as pd
+import numpy as np
 
 # Read auditory stroop correction sheet data
 def get_sheet_data(sheet_data, codes, protocol, start_idx):
@@ -14,7 +14,7 @@ def get_sheet_data(sheet_data, codes, protocol, start_idx):
         st_blocks = []
         dt_blocks = [1, 2, 3, 4, 5, 6]
         block_types = ["DT"]
-    
+
     # Go subject by subject
     subject_data = []
     for idx in range(start_idx,len(sheet_data)):
@@ -46,12 +46,12 @@ def get_sheet_data(sheet_data, codes, protocol, start_idx):
                 percent_ic = sum_ic['answers'] / len_ic * 100
                 percent_c = sum_c['answers'] / len_c * 100
                 percent_total = sum_total['answers'] / len_total * 100
-                
+
             # Create dataframe for this subject/protocol/block type
             acc = {"subject":  [subject],
                     "protocol": [protocol],
                     "block_type": [block_type],
-                    "accuracy_ic": [percent_ic], 
+                    "accuracy_ic": [percent_ic],
                     "accuracy_c": [percent_c],
                     "accuracy_total": [percent_total]}
             frame = pd.DataFrame(data=acc)
@@ -60,7 +60,7 @@ def get_sheet_data(sheet_data, codes, protocol, start_idx):
     return subject_data
 
 # Structure answer times by subject, protocol, block type
-def structure_answer_times(answer_times, protocol, codes):
+def structure_answer_times(answer_times, protocol, codes, isi):
 
     # Which ones are single task and which are dual task?
     num_prompts = 7
@@ -81,12 +81,13 @@ def structure_answer_times(answer_times, protocol, codes):
     answer_times['answer_number'] = answer_times['answer'].str.split("_").str[-1].astype(int) - 1
     answer_times['prompt_number'] = answer_times['answer_number'] + 1
     answer_times['congruency'] = codes[answer_times['answer_number']]
+    answer_times['isi'] = isi[answer_times['answer_number']]
     answer_times['block_num'] = np.divide(answer_times['answer_number'].tolist(), num_prompts).astype(int) + 1
     answer_times['block_type'] = np.where(np.isin(answer_times['block_num'].values, st_blocks), "ST", "DT")
     answer_times['protocol'] = protocol
 
     # Re-order and return
-    answer_times = answer_times[['subject', 'protocol', 'block_num', 'block_type', 'prompt_number', 'congruency', 'answer_time']]
+    answer_times = answer_times[['subject', 'protocol', 'block_num', 'block_type', 'prompt_number', 'congruency', 'isi', 'answer_time']]
     return answer_times
 
 if __name__ == "__main__":
@@ -96,7 +97,7 @@ if __name__ == "__main__":
     # Read correction sheet data
     # 0 wrong
     # 1 correct
-    # 99 missing answer 
+    # 99 missing answer
     p1_data_hc = pd.read_excel("temp_data/Accuracy_setup_1_bigstudy.xlsx", sheet_name='SETUP 1_HC')
     p1_data_pd = pd.read_excel("temp_data/Accuracy_setup_1_bigstudy.xlsx", sheet_name='SETUP 1_PD')
     p3_data_hc = pd.read_excel("temp_data/Accuracy_setup_3_bigstudy.xlsx", sheet_name='SETUP 3_HC')
@@ -106,6 +107,14 @@ if __name__ == "__main__":
     codes_p1 = p1_data_hc.iloc[0].values[1:]
     codes_p3 = p3_data_hc.iloc[0].values[1:]
 
+    # Get ISIs for each prompt
+    isi_cols = [f"isi_{i}" for i in range(1, 8)]
+    isi_p1 = pd.read_excel("temp_data/auditory_stroop_protocol_1.xlsx")
+    isi_p3 = pd.read_excel("temp_data/auditory_stroop_protocol_3.xlsx")
+
+    isi_p1 = isi_p1[isi_cols].to_numpy().flatten()
+    isi_p3 = isi_p3[isi_cols].to_numpy().flatten()
+
     # Read answer times
     p1_hc_answer_times = pd.read_csv("temp_data/reaction_times_hc_setup1.csv")
     p3_hc_answer_times = pd.read_csv("temp_data/reaction_times_hc_setup3.csv")
@@ -114,12 +123,12 @@ if __name__ == "__main__":
 
     # Structure answer times
     all_data = []
-    all_data.append(structure_answer_times(p1_hc_answer_times, "protocol_1", codes_p1))
-    all_data.append(structure_answer_times(p3_hc_answer_times, "protocol_3", codes_p3))
-    all_data.append(structure_answer_times(p1_pd_answer_times, "protocol_1", codes_p1))
-    all_data.append(structure_answer_times(p3_pd_answer_times, "protocol_3", codes_p3))
+    all_data.append(structure_answer_times(p1_hc_answer_times, "protocol_1", codes_p1, isi_p1))
+    all_data.append(structure_answer_times(p3_hc_answer_times, "protocol_3", codes_p3, isi_p3))
+    all_data.append(structure_answer_times(p1_pd_answer_times, "protocol_1", codes_p1, isi_p1))
+    all_data.append(structure_answer_times(p3_pd_answer_times, "protocol_3", codes_p3, isi_p3))
     answer_time_frame = pd.concat(all_data)
-    answer_time_frame.to_csv("auditory_stroop_answer_time.csv", index=False)
+    answer_time_frame.to_csv("temp_data/auditory_stroop_answer_time.csv", index=False)
     print(answer_time_frame)
 
     # Extract relevant data about accuracy
@@ -130,9 +139,5 @@ if __name__ == "__main__":
     all_data.append(get_sheet_data(p3_data_pd, codes_p3, "protocol_3", 0))
     all_data = [item for subject_data in all_data for item in subject_data]
     accuracy_frame = pd.concat(all_data)
-    accuracy_frame.to_csv("auditory_stroop_accuracy.csv", index=False)
+    accuracy_frame.to_csv("temp_data/auditory_stroop_accuracy.csv", index=False)
     print(accuracy_frame)
-
-   
-
-
